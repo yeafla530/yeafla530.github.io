@@ -422,3 +422,356 @@ export default IndexPage
 * `페이지가 로딩`되면 Gatsby는 `리소스 로드 속도를 높이기 위해` 현재 페이지에서 사용되는 `모든 링크를 찾은 후, 각 링크 페이지를 미리 로드`하기 시작함
 * 프로젝트에서 확인해보면 메인 페이지의 `로딩이 완료되면 Gatsby는 /info링크를 찾고 이 페이지를 미리 로드`한다
 * 이를 통해 Gatsby는 `더 높은 사용자 경험`을 제공할 수 있는 것이다!
+
+
+
+# EmotionsJS란
+
+* Sass, Css같은 경우 스타일 파일을 따로 만들고, 이를 컴포넌트 파일에서 불러와 적용하는 방식
+* EmotionJS 라이브러리는 `CSS-in-JS` 라이브러리로, 자바스크립트 파일 내에서 스타일을 지정할 수 있는 라이브러리다
+
+
+
+### 왜 EmotionJS인가?
+
+![img](images/gatsby-lecture-3-1-1.png)
+
+* 다운로드 횟수를 보면 ㄷ부분 사용자가 `styled-components 라이브러리` 또는 `EmotionJS 라이브러리`를 사용하는데, EmotionJS 라이브러리가 월등히 높다
+
+### styled-components
+
+`장점`
+
+1. 템플릿 리터럴 또는 객체를 통해 손쉽게 스타일을 적용한 컴포넌트를 만들 수 있고 손쉽게 적용할 수 있다
+2. Sass 문법을 지원하기 때문에 더 간결한 코드 작성이 가능하고, 서버사이드렌더링을 지원해주기 때문에 이를 위해 추가적인 조치를 취할 필요가 없다
+
+`단점`
+
+1. **번들 용량**이 위의 사진과 같이 4개의 라이브러리 중 제일 크다. 이는 콘텐츠 제공에 큰 영향을 끼치기 때문에 중요한 사항
+
+### EmotionJS
+
+1. styled-components의 기능을 거의 동일하게 사용할 수 있다
+2. 추가적으로 라이브러리를 설치해 손쉽게 기능 확장이 가능하다
+3. 라이브러리의 `번들 용량이 다른 라이브러리에 비해 압도적으로 작기 때문`에 지금까지 사랑받고 있음
+
+
+
+## EmotionJS 설치 및 기본 세팅
+
+* 라이브러리 설치
+
+  ```
+  yarn add gatsby-plugin-emotion @emotion/react @emotion/styled
+  ```
+
+* `gatsby-config.js`에서 플러그인 추가
+
+  ```
+  module.exports = {
+    siteMetadata: { ... },
+    plugins: [
+      ...,
+      `gatsby-plugin-emotion`,
+      ...
+    ]
+  }
+  ```
+
+
+
+## EmotionJS 사용법
+
+### 배울 내용
+
+1. CSS 정의 및 글로벌 스타일 지정방법
+2. Tagged Template Literal 방식을 통해 정의한 CSS 적용 방법
+3. Tagged Template Literal 방식을 통한 Styled Component 생성 방법
+4. 객체를 통한 Styled Component 생성 방법
+5. Styled Component에서 Props를 받아 처리하는 방법
+
+
+
+> 모두 info.tsx파일에서 진행
+
+
+
+### css 정의 및 글로벌 스타일 지정 방법
+
+> 글로벌 스타일 지정 방법과 Tagged Template Literal 방식을 통한 css 정의 방법
+
+1. 컴포넌트와 함수 불러오기
+
+```
+// info.tsx
+import React, { FunctionComponent } from 'react'
+import { graphql } from 'gatsby'
+import { Global, css } from '@emotion/react'
+
+...
+```
+
+2. **전역**으로 설정할 스타일을 정의, css라는 함수 통해 Tagged Template Literal 방식으로 스타일 지정
+
+```
+import styled from '@emotion/styled'
+import { Global, css } from '@emotion/react'
+
+...
+
+const globalStyle = css`
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+    font-size: 20px;
+  }
+`
+```
+
+3. CSS를 통해 전역 스타일 변경
+   * 이를 위해 emotionjs에서는 Global이라는 컴포넌트를 제공함
+   * styles라는 이름의 props로 정의한 props로 정의한 CSS를 넘겨줌
+
+```
+
+const globalStyle = css`
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+
+        font-size: 20px;
+    }
+`
+
+const InfoPage: FunctionComponent<InfoPageProps> = function ({
+    data: {
+        site: {
+            siteMetadata: { title, description, author },
+        },
+    },
+}) {
+    return (
+        <div>
+            <Global styles={globalStyle}/>
+            {title} {description} {author}
+        </div>
+    )
+}
+```
+
+4. `localhost:8000/info`에서 적용된 스타일 확인하기
+
+
+
+### Tagged Template Literal 방식을 통해 정의한 CSS 적용 방법
+
+> Tagged Template Literal 방식을 통해 정의한 CSS를 일반 HTML 요소 또는 Styled Component에 적용하는 방법
+
+* 사용자 정의 컴포넌트에서는 사용이 불가능합니다.
+
+
+
+1. 텍스트 스타일 정의
+
+```
+...
+
+const TextStyle = css`
+  font-size: 18px;
+  font-weight: 700;
+  color: gray;
+`
+```
+
+2. title 텍스트에 스타일을 지정해주기 위해 Div 요소로 감싸준 후, css 속성 값으로 위에서 정의한 TextStyle CSS를 넘겨줌
+
+```
+...
+
+const InfoPage: FunctionComponent<InfoPageProps> = function ({
+  data: {
+    site: {
+      siteMetadata: { title, description, author },
+    },
+  },
+}) {
+  return (
+    <div>
+      <Global styles={globalStyle} />
+      <div css={TextStyle}>{title}</div>
+      {description} {author}
+    </div>
+  )
+}
+
+...
+```
+
+3. 여기서 css props부분에 빨간 밑줄이 그어지면서 경고문 출력될 것임
+   * 이를 해결하기 위해서는 기존의 HTML의 Element 타입을 상속받아 해당 프로퍼티를 추가한 새로운 타입을 정의해주어야 하지만 여기에선 **생략**
+
+```
+'{ children: string; css: SerializedStyles; }' 형식은 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>' 형식에 할당할 수 없습니다.
+  'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>' 형식에 'css' 속성이 없습니다.ts(2322)
+```
+
+
+
+### Tagged Template Literal 방식을 통한 Styled Component 생성 방법
+
+> css정의가 아닌 Styled Component 생성방법
+
+* css함수 정의방법과 비슷하지만 사용하는 라이브러리와 호출 함수에서 차이점 존재
+
+
+
+1. 함수 import
+
+```
+...
+import styled from '@emotion/styled'
+```
+
+2. 변수명이 Text1인 Styled Component 생성
+   * div가 아닌 다른 요소 스타일 적용하고 싶은 경우엔 `style.img`와 같이 해당 엘리먼트를 styled뒤에 붙여 호출해주면 됨
+
+```
+...
+const TextStyle = css`
+    font-size: 18px;
+    font-weight: 700;
+    color: gray;
+`
+const Text1 = styled.div`
+    font-size: 20px;
+    font-weight: 700;
+`
+```
+
+3. 정의한 Styled Component는 일반적인 컴포넌트나 HTML요소같이 사용
+
+```
+return (
+    <div>
+        <Global styles={globalStyle} />
+        <div css={TextStyle}>{title}</div>
+        <Text1>{description}</Text1>
+        {author}
+    </div>
+)
+```
+
+
+
+### 객체를 통한 Styled Component 생성 방법
+
+> 위의 방법은 진짜 css코드를 작성하듯이 스타일 지정 가능했지만, 이 방법은 스타일 속성을 객체에 담아 전달한다
+
+* 하이픈('-')을 통해 단어를 연결하는 Kebab Case가 아닌 Camel Case를 사용한다
+* 스타일 값은 무조건 String Type으로 전달한다
+
+1. 객체를 통해 Styled component 생성
+
+```
+...
+
+// Kebab Case 적용
+const Text1 = styled.div`
+  font-size: 20px;
+  font-weight: 700;
+`
+
+// Camel Case 적용
+const Text2 = styled('div')(() => ({
+  fontSize: '15px',
+  color: 'blue',
+}))
+
+...
+```
+
+
+
+2. 정의한 Text2 컴포넌트를 일반 컴포넌트나 HTML요소처럼 사용 가능하다 
+   * 함수를 호출하는 방법과 HTML요소를 문자열로 넘겨 함수를 호출하는 방법으로 나뉨
+   * Styled Component를 정의하는 방법에 상관없이 사용 가능
+
+```
+const InfoPage: FunctionComponent<InfoPageProps> = function ({
+  data: {
+    site: {
+      siteMetadata: { title, description, author },
+    },
+  },
+}) {
+  return (
+    <div>
+      <Global styles={globalStyle} />
+      <div css={TextStyle}>{title}</div>
+      <Text1>{description}</Text1>
+      <Text2>{author}</Text2>
+    </div>
+  )
+}
+
+...
+```
+
+
+
+### Styled Component에서 Props를 받아 처리하는 방법
+
+> Tagged Template Literal 방식으로 생성한 Styled Component와 객체를 통한 Styled Component 모두 Props 받아 처리할 수 있음
+
+*  disabled라는 Props를 받아 만약 참이면 글씨에 중간줄을 추가하기
+* Typescript에서는 Styled Component의 Props를 받아 사용하기 위해 타입을 지정해 주어야함
+
+
+
+1. Props 타입 지정
+   * Props가 많다면 타입을 위에서 따로 정의해 사용하겠지만 1개만 받기때문에 리터럴 형식으로 타입 작성
+
+```
+const Text1 = styled.div<{disable: Boolean}>`
+    font-size: 20px;
+    font-weight: 700;
+`
+
+const Text2 = styled('div')<{disable: Boolean}>(() => ({
+    fontSize: '15px',
+    color: 'blue',
+}))
+
+```
+
+2. disable값에 따라 적용할 스타일 지정
+
+```
+const Text1 = styled.div<{ disable: Boolean }>`
+    font-size: 20px;
+    font-weight: 700;
+    text-decoration: ${({ disable }) => (disable ? 'line-through' : 'none')};
+`
+
+const Text2 = styled('div')<{ disable: Boolean }>(({ disable }) => ({
+    fontSize: '15px',
+    color: 'blue',
+    textDecoration: disable ? 'line-through' : 'none',
+}))
+```
+
+3. 컴포넌트에서 Props 전달
+
+```
+<Text1 disable={true}>{description}</Text1>
+<Text2 disable={true}>{author}</Text2>
+```
+
+
+
+### EmotionJS 결과 확인
+
+![img](images/3b28d204027b918a4dff00fda949a2a0e027793640582ee7954aac973963b580.png)
